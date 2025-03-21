@@ -35,6 +35,11 @@ accelerate launch --config_file=recipes/accelerate_configs/zero3.yaml src/open_r
     --output_dir data/Qwen2.5-1.5B-Open-R1-Distill
 """
 
+import os
+
+cache_dir = os.path.join(os.getenv("AMLT_DATA_DIR", "~/.cache/"), "huggingface")
+os.environ["HF_CACHE_DIR"] = cache_dir
+
 import logging
 import os
 import sys
@@ -59,14 +64,25 @@ from trl import (
     get_peft_config,
     get_quantization_config,
 )
+from dotenv import load_dotenv
+
+
+load_dotenv(".env")
 
 
 logger = logging.getLogger(__name__)
 
 
+
+
 def main(script_args, training_args, model_args):
     # Set seed for reproducibility
     set_seed(training_args.seed)
+
+
+    data_dir = os.getenv("AMLT_DATA_DIR", "data/")
+    output_dir = os.getenv("AMLT_OUTPUT_DIR", "./")
+    training_args.output_dir = os.path.join(output_dir, training_args.output_dir)
 
     ###############
     # Setup logging
@@ -86,6 +102,8 @@ def main(script_args, training_args, model_args):
     logger.info(f"Model parameters {model_args}")
     logger.info(f"Script parameters {script_args}")
     logger.info(f"Training parameters {training_args}")
+
+
 
     # Check for last checkpoint
     last_checkpoint = None

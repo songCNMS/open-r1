@@ -11,6 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import os
+
+cache_dir = os.path.join(os.getenv("AMLT_DATA_DIR", "~/.cache/"), "huggingface")
+os.environ["HF_CACHE_DIR"] = cache_dir
 
 import logging
 import os
@@ -40,7 +44,10 @@ from open_r1.utils import get_tokenizer
 from open_r1.utils.callbacks import get_callbacks
 from open_r1.utils.wandb_logging import init_wandb_training
 from trl import GRPOTrainer, ModelConfig, ScriptArguments, TrlParser, get_peft_config
+from dotenv import load_dotenv
 
+
+load_dotenv(".env")
 
 logger = logging.getLogger(__name__)
 
@@ -113,6 +120,10 @@ class GRPOScriptArguments(ScriptArguments):
 def main(script_args, training_args, model_args):
     # Set seed for reproducibility
     set_seed(training_args.seed)
+    
+    data_dir = os.getenv("AMLT_DATA_DIR", "data/")
+    output_dir = os.getenv("AMLT_OUTPUT_DIR", "./")
+    training_args.output_dir = os.path.join(output_dir, training_args.output_dir)
 
     ###############
     # Setup logging
